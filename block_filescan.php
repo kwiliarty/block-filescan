@@ -16,7 +16,7 @@ class block_filescan extends block_base {
     }
 
     public function applicable_formats() {
-        return array('site' => false, 'my' => false, 'course' => true);
+        return array('site' => true, 'my' => false, 'course' => true);
     }
 
 private function get_file_list() {
