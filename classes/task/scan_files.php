@@ -64,20 +64,33 @@ class scan_files extends \core\task\scheduled_task
         $max_files_to_check = (int) get_config("block_afs", "numfilespercron");
         $max_retries = (int) get_config("block_afs", "maxretries");
 
-        $query = 'SELECT distinct f.contenthash 
+        $query = "SELECT afs.contenthash 
             FROM {files} f, {context} c
             WHERE c.id = f.contextid 
                 AND c.contextlevel = 70 
                 AND f.filesize <> 0 
-                AND f.mimetype = "application/pdf"
-                AND f.component <> "assignfeedback_editpdf" 
-                AND f.filearea <> "stamps"
-                AND f.contenthash NOT IN (SELECT contenthash FROM {block_afs} where checked=True or (checked=False and status="error" and statuscode >=' . $max_retries . ')) 	
+                AND f.mimetype = 'application/pdf'
+                AND f.component <> 'assignfeedback_editpdf' 
+                AND f.filearea <> 'stamps'
+                AND f.contenthash NOT IN (SELECT contenthash FROM {block_afs} where checked=1  or (checked <> 1 and status='error' and statuscode >= $max_retries )) 	
             ORDER BY f.id DESC
-            LIMIT ' . $max_files_to_check;
+            LIMIT $max_files_to_check";
+
+        $query = "SELECT afs.contenthash
+            FROM {block_afs} afs
+        ";
+
+        // LEFT JOIN {context} c ON f.contextid = c.id
+        // LEFT JOIN {block_afs} afs ON f
+        // WHERE c.contextlevel = 70
+        // LIMIT $max_files_to_check
+
+        print_r($query);
 
         // make the query and return an array of the files
         $content_hashes = $conn->get_records_sql($query);
+
+        print_r($content_hashes);
 
         // Only continue if there are content hashes
         if (!$content_hashes) {
@@ -99,7 +112,7 @@ class scan_files extends \core\task\scheduled_task
         $query = "SELECT  f.contenthash, f.pathnamehash 
             FROM {files} f
             WHERE f.contenthash IN ($comma_separated_content_hashes)
-            GROUP BY f.contenthash";
+            GROUP BY f.contenthash, f.pathnamehash";
 
         $files = $conn->get_records_sql($query);
 
