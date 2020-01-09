@@ -64,7 +64,7 @@ class scan_files extends \core\task\scheduled_task
         $max_files_to_check = (int) get_config("block_afs", "numfilespercron");
         $max_retries = (int) get_config("block_afs", "maxretries");
 
-        $query = "SELECT afs.contenthash 
+        $query = "SELECT distinct f.contenthash 
             FROM {files} f, {context} c
             WHERE c.id = f.contextid 
                 AND c.contextlevel = 70 
@@ -72,13 +72,13 @@ class scan_files extends \core\task\scheduled_task
                 AND f.mimetype = 'application/pdf'
                 AND f.component <> 'assignfeedback_editpdf' 
                 AND f.filearea <> 'stamps'
-                AND f.contenthash NOT IN (SELECT contenthash FROM {block_afs} where checked=1  or (checked <> 1 and status='error' and statuscode >= $max_retries )) 	
-            ORDER BY f.id DESC
-            LIMIT $max_files_to_check";
+                AND f.contenthash NOT IN (SELECT contenthash FROM {block_afs} where checked=1  or (checked <> 1 and status='error' and statuscode >= $max_retries ))";
+            // ORDER BY f.id DESC
+            // LIMIT $max_files_to_check";
 
-        $query = "SELECT afs.contenthash
-            FROM {block_afs} afs
-        ";
+        // $query = "SELECT afs.contenthash
+        //     FROM {block_afs} afs
+        // ";
 
         // LEFT JOIN {context} c ON f.contextid = c.id
         // LEFT JOIN {block_afs} afs ON f
